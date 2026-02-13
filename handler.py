@@ -19,8 +19,17 @@ from PIL import Image
 # Model paths
 # ---------------------------------------------------------------------------
 MODEL_ID = "Tongyi-MAI/Z-Image-Turbo"
-LORA_PATH = "/models/sg_style_v2.safetensors"
 LORA_URL = "https://github.com/JonBearHimself/avatar-zimage-worker/releases/download/v1.0/sg_style_v2.safetensors"
+
+# Use network volume for caching if available
+if os.path.isdir("/runpod-volume"):
+    HF_CACHE = "/runpod-volume/hf_cache"
+    LORA_PATH = "/runpod-volume/models/sg_style_v2.safetensors"
+    os.makedirs(HF_CACHE, exist_ok=True)
+    os.makedirs("/runpod-volume/models", exist_ok=True)
+else:
+    HF_CACHE = None  # use diffusers default
+    LORA_PATH = "/models/sg_style_v2.safetensors"
 
 # ---------------------------------------------------------------------------
 # Character definitions — natural language for Z-Image Turbo
@@ -108,10 +117,10 @@ def load_pipeline():
     print(f"Loading Z-Image Turbo pipeline...")
     sys.stdout.flush()
 
-    pipe = ZImagePipeline.from_pretrained(
-        MODEL_ID,
-        torch_dtype=torch.bfloat16,
-    )
+    kwargs = {"torch_dtype": torch.bfloat16}
+    if HF_CACHE:
+        kwargs["cache_dir"] = HF_CACHE
+    pipe = ZImagePipeline.from_pretrained(MODEL_ID, **kwargs)
     pipe.to("cuda")
 
     print(f"  Pipeline loaded in {time.time() - t0:.1f}s")
