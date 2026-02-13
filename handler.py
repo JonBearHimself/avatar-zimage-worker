@@ -20,7 +20,7 @@ from PIL import Image
 # ---------------------------------------------------------------------------
 MODEL_ID = "Tongyi-MAI/Z-Image-Turbo"
 LORA_PATH = "/models/sg_style_v2.safetensors"
-HF_CACHE = "/runpod-volume/hf_cache"
+HF_CACHE = os.environ.get("HF_HOME", "/root/.cache/huggingface")
 
 # ---------------------------------------------------------------------------
 # Character definitions — natural language for Z-Image Turbo
