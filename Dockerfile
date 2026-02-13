@@ -1,7 +1,7 @@
 # RunPod Serverless Worker — Z-Image Turbo + StrongGirls LoRA
 #
 # Uses PyTorch 2.5+ for enable_gqa support required by Z-Image attention.
-# Models downloaded at runtime by start.sh, cached on network volume.
+# LoRA + HF model downloaded on first request by handler.py.
 
 FROM nvidia/cuda:12.4.1-runtime-ubuntu22.04
 
@@ -10,7 +10,7 @@ ENV PYTHONUNBUFFERED=1
 
 # System deps
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3 python3-pip wget \
+    python3 python3-pip \
     && rm -rf /var/lib/apt/lists/*
 
 # PyTorch 2.5+ (required for enable_gqa in Z-Image attention)
@@ -25,17 +25,11 @@ RUN pip3 install --no-cache-dir \
     Pillow numpy \
     && rm -rf /root/.cache/pip
 
-# Model directory (LoRA downloaded at runtime)
+# Model directory (LoRA downloaded at runtime by handler.py)
 RUN mkdir -p /models
 
-# LoRA download URL — set via RunPod env var
-ENV MODEL_URL_LORA=""
-ENV HF_TOKEN=""
-
-# Handler
+# Handler runs directly — no start.sh needed
 WORKDIR /app
 COPY handler.py .
-COPY start.sh .
-RUN chmod +x start.sh
 
-CMD ["/app/start.sh"]
+CMD ["python3", "handler.py"]

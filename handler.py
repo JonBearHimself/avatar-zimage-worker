@@ -20,7 +20,7 @@ from PIL import Image
 # ---------------------------------------------------------------------------
 MODEL_ID = "Tongyi-MAI/Z-Image-Turbo"
 LORA_PATH = "/models/sg_style_v2.safetensors"
-HF_CACHE = os.environ.get("HF_HOME", "/root/.cache/huggingface")
+LORA_URL = "https://github.com/JonBearHimself/avatar-zimage-worker/releases/download/v1.0/sg_style_v2.safetensors"
 
 # ---------------------------------------------------------------------------
 # Character definitions — natural language for Z-Image Turbo
@@ -80,11 +80,28 @@ STYLE_ANCHOR = "Clean anime linework, vibrant colors, detailed muscle definition
 pipe = None
 
 
+def download_lora():
+    """Download LoRA from GitHub releases if not present."""
+    if os.path.exists(LORA_PATH):
+        print(f"LoRA already at {LORA_PATH}")
+        return
+    os.makedirs(os.path.dirname(LORA_PATH), exist_ok=True)
+    print(f"Downloading LoRA from {LORA_URL}...")
+    sys.stdout.flush()
+    import urllib.request
+    urllib.request.urlretrieve(LORA_URL, LORA_PATH)
+    size_mb = os.path.getsize(LORA_PATH) / (1024 * 1024)
+    print(f"  LoRA downloaded ({size_mb:.0f}MB)")
+    sys.stdout.flush()
+
+
 def load_pipeline():
     """Load Z-Image Turbo pipeline + LoRA."""
     global pipe
 
     from diffusers import ZImagePipeline
+
+    download_lora()
 
     t0 = time.time()
 
@@ -94,7 +111,6 @@ def load_pipeline():
     pipe = ZImagePipeline.from_pretrained(
         MODEL_ID,
         torch_dtype=torch.bfloat16,
-        cache_dir=HF_CACHE,
     )
     pipe.to("cuda")
 
@@ -222,7 +238,8 @@ def get_diagnostics() -> dict:
         diag["lora_size_mb"] = round(os.path.getsize(LORA_PATH) / (1024 * 1024))
     diag["pipeline_loaded"] = pipe is not None
     diag["network_volume"] = "MOUNTED" if os.path.isdir("/runpod-volume") else "NOT MOUNTED"
-    diag["hf_cache_exists"] = os.path.isdir(HF_CACHE)
+    diag["runpod_version"] = runpod.__version__ if hasattr(runpod, "__version__") else "unknown"
+    diag["torch_version"] = torch.__version__
 
     try:
         result = subprocess.run(
