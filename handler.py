@@ -80,7 +80,7 @@ MUSCLE_LEVELS = {
     "highly_muscular": "highly muscular female bodybuilder woman with massive thighs, neck muscles, and powerful build",
 }
 
-STYLE_ANCHOR = "Clean anime linework, vibrant colors, detailed muscle definition, cel-shaded lighting."
+STYLE_ANCHOR = ""  # LoRA trigger "anime illustration of" handles style
 
 # ---------------------------------------------------------------------------
 # Global pipeline
@@ -181,8 +181,6 @@ def build_prompt(description: str, character: str = "kaori",
         parts.append(description + ".")
     else:
         parts.append(f"Wearing {char['outfit']}, {description}.")
-
-    parts.append(STYLE_ANCHOR)
 
     return " ".join(parts)
 
