@@ -12,7 +12,8 @@
 set -e
 
 GITHUB_RAW="https://raw.githubusercontent.com/JonBearHimself/avatar-zimage-worker/main"
-LORA_URL="https://github.com/JonBearHimself/avatar-zimage-worker/releases/download/v2.0/zit_sg_3_000002500.safetensors"
+LORA_URL="https://github.com/JonBearHimself/avatar-zimage-worker/releases/download/v2.0/zit_sg_2_000002500.safetensors"
+# LoRA v2 (zit_sg_2) — testing alternative from same trainer
 
 NV="/runpod-volume"
 PIP_CACHE="$NV/pip_packages"
@@ -48,15 +49,15 @@ if [ -d "$NV" ]; then
     echo "[done] handler.py"
 
     # Download LoRA if not cached
-    if [ -f "$NV/models/zit_sg_3_000002500.safetensors" ]; then
+    if [ -f "$NV/models/zit_sg_2_000002500.safetensors" ]; then
         echo "[cached] LoRA model"
     else
         echo "[downloading] LoRA model ..."
         mkdir -p "$NV/models"
-        wget -q --show-progress -O "$NV/models/zit_sg_3_000002500.safetensors" "$LORA_URL"
-        echo "[done] LoRA model ($(du -h "$NV/models/zit_sg_3_000002500.safetensors" | cut -f1))"
+        wget -q --show-progress -O "$NV/models/zit_sg_2_000002500.safetensors" "$LORA_URL"
+        echo "[done] LoRA model ($(du -h "$NV/models/zit_sg_2_000002500.safetensors" | cut -f1))"
     fi
-    ln -sf "$NV/models/zit_sg_3_000002500.safetensors" "$MODEL_DIR/zit_sg_3_000002500.safetensors"
+    ln -sf "$NV/models/zit_sg_2_000002500.safetensors" "$MODEL_DIR/zit_sg_2_000002500.safetensors"
 
     HANDLER="$APP_CACHE/handler.py"
 else
@@ -74,7 +75,7 @@ else
 
     if [ -n "$MODEL_URL_LORA" ]; then
         echo "[downloading] LoRA model ..."
-        wget -q --show-progress -O "$MODEL_DIR/zit_sg_3_000002500.safetensors" "$LORA_URL"
+        wget -q --show-progress -O "$MODEL_DIR/zit_sg_2_000002500.safetensors" "$LORA_URL"
     fi
 
     HANDLER="/app/handler.py"

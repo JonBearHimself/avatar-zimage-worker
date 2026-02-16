@@ -19,68 +19,68 @@ from PIL import Image
 # Model paths
 # ---------------------------------------------------------------------------
 MODEL_ID = "Tongyi-MAI/Z-Image-Turbo"
-LORA_URL = "https://github.com/JonBearHimself/avatar-zimage-worker/releases/download/v2.0/zit_sg_3_000002500.safetensors"
+LORA_URL = "https://github.com/JonBearHimself/avatar-zimage-worker/releases/download/v2.0/zit_sg_2_000002500.safetensors"
 
 # Use network volume for caching if available
 if os.path.isdir("/runpod-volume"):
     HF_CACHE = "/runpod-volume/hf_cache"
-    LORA_PATH = "/runpod-volume/models/zit_sg_3_000002500.safetensors"
+    LORA_PATH = "/runpod-volume/models/zit_sg_2_000002500.safetensors"
     os.makedirs(HF_CACHE, exist_ok=True)
     os.makedirs("/runpod-volume/models", exist_ok=True)
 else:
     HF_CACHE = None  # use diffusers default
-    LORA_PATH = "/models/zit_sg_3_000002500.safetensors"
+    LORA_PATH = "/models/zit_sg_2_000002500.safetensors"
 
 # ---------------------------------------------------------------------------
 # Character definitions — natural language for Z-Image Turbo
 # ---------------------------------------------------------------------------
 CHARACTERS = {
     "kaori": {
-        "appearance": "a young petite girl with short pink hair and pink eyes, wearing black headphones, small chest",
+        "appearance": "a young petite muscular girl with short pink hair and pink eyes, wearing black headphones, small chest",
         "outfit": "pink crop top and pink shorts",
     },
     "yuka": {
-        "appearance": "a woman with long black hair in a side ponytail with a red scrunchie, red eyes, ahoge",
+        "appearance": "a muscular woman with long black hair in a side ponytail with a red scrunchie, red eyes, ahoge",
         "outfit": "black tank top and black cargo pants",
     },
     "haruka": {
-        "appearance": "a mature woman with orange hair in a messy bun with long side locks, green eyes, bangs",
+        "appearance": "a mature muscular woman with orange hair in a messy bun with long side locks, green eyes, bangs",
         "outfit": "green sundress with low neckline",
     },
     "kasumi": {
-        "appearance": "a mature woman with short red hair and a black eyepatch over her right eye, one yellow eye",
+        "appearance": "a mature muscular woman with short red hair and a black eyepatch over her right eye, one yellow eye",
         "outfit": "unbuttoned black jacket over a red tank top and black pants",
     },
     "manami": {
-        "appearance": "a woman with long wavy light green hair with braided locks tied with red ribbons, light green eyes, medium chest",
+        "appearance": "a muscular woman with long wavy light green hair with braided locks tied with red ribbons, light green eyes, medium chest",
         "outfit": "white seifuku with navy sailor collar and navy pleated skirt",
     },
     "miyu": {
-        "appearance": "a woman with dark purple wavy hair in medium twintails with black bows, purple eyes, medium chest",
+        "appearance": "a muscular woman with dark purple wavy hair in medium twintails with black bows, purple eyes, medium chest",
         "outfit": "black sports jacket unzipped over white sports bra and black shorts",
     },
     "naomi": {
-        "appearance": "a mature feral-looking woman with short messy white hair and red eyes, sharp teeth",
+        "appearance": "a mature feral-looking muscular woman with short messy white hair and red eyes, sharp teeth",
         "outfit": "black tank top and red shorts",
     },
     "saya": {
-        "appearance": "a woman with long straight light blue hair, open light blue eyes, bangs, energetic",
+        "appearance": "a muscular woman with long straight light blue hair, open light blue eyes, bangs, energetic",
         "outfit": "white button-up shirt with black choker, plaid skirt, and blue tie",
     },
     "hino": {
-        "appearance": "a woman with long blonde hair, blue eyes, bangs, large chest",
+        "appearance": "a muscular woman with long blonde hair, blue eyes, bangs, large chest",
         "outfit": "seifuku with white shirt, pink ribbon bowtie, pink sailor collar, pink mini skirt",
     },
 }
 
 MUSCLE_LEVELS = {
-    "default": "athletic",
+    "default": "muscular with defined biceps, abs, and strong shoulders",
     "athletic": "athletic",
-    "muscular": "muscular",
-    "highly_muscular": "highly muscular female bodybuilder woman",
+    "muscular": "muscular with defined biceps, abs, and strong shoulders",
+    "highly_muscular": "highly muscular female bodybuilder woman with massive thighs, neck muscles, and powerful build",
 }
 
-STYLE_ANCHOR = "Clean anime linework, vibrant colors."
+STYLE_ANCHOR = "Clean anime linework, vibrant colors, detailed muscle definition, cel-shaded lighting."
 
 # ---------------------------------------------------------------------------
 # Global pipeline
@@ -139,8 +139,8 @@ def load_pipeline():
         print(f"Loading LoRA from {LORA_PATH}...")
         sys.stdout.flush()
         pipe.load_lora_weights(LORA_PATH)
-        pipe.fuse_lora(lora_scale=0.65)
-        print("  LoRA fused at strength 0.65")
+        pipe.fuse_lora(lora_scale=0.8)
+        print("  LoRA fused at strength 0.8")
         sys.stdout.flush()
     else:
         print(f"WARNING: LoRA not found at {LORA_PATH} — running without style LoRA")
