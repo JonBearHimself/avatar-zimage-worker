@@ -19,17 +19,17 @@ from PIL import Image
 # Model paths
 # ---------------------------------------------------------------------------
 MODEL_ID = "Tongyi-MAI/Z-Image-Turbo"
-LORA_URL = "https://github.com/JonBearHimself/avatar-zimage-worker/releases/download/v1.0/sg_style_v2.safetensors"
+LORA_URL = "https://github.com/JonBearHimself/avatar-zimage-worker/releases/download/v2.0/zit_sg_3_000002500.safetensors"
 
 # Use network volume for caching if available
 if os.path.isdir("/runpod-volume"):
     HF_CACHE = "/runpod-volume/hf_cache"
-    LORA_PATH = "/runpod-volume/models/sg_style_v2.safetensors"
+    LORA_PATH = "/runpod-volume/models/zit_sg_3_000002500.safetensors"
     os.makedirs(HF_CACHE, exist_ok=True)
     os.makedirs("/runpod-volume/models", exist_ok=True)
 else:
     HF_CACHE = None  # use diffusers default
-    LORA_PATH = "/models/sg_style_v2.safetensors"
+    LORA_PATH = "/models/zit_sg_3_000002500.safetensors"
 
 # ---------------------------------------------------------------------------
 # Character definitions — natural language for Z-Image Turbo
@@ -74,11 +74,10 @@ CHARACTERS = {
 }
 
 MUSCLE_LEVELS = {
-    "default": "muscular with defined biceps, abs, and strong shoulders",
-    "bulky": "muscular with defined biceps, abs, and strong shoulders",
-    "big": "heavily muscular with large biceps, broad shoulders, and thick thighs",
-    "enormous": "enormously muscular with massive bulging muscles, huge arms, and powerful legs",
-    "gigantic": "gigantically muscular with extreme bodybuilder physique, enormous bulging veins, impossibly huge muscles",
+    "default": "athletic",
+    "athletic": "athletic",
+    "muscular": "muscular",
+    "highly_muscular": "highly muscular female bodybuilder woman with massive thighs, neck muscles, and powerful build",
 }
 
 STYLE_ANCHOR = "Clean anime linework, vibrant colors, detailed muscle definition, cel-shaded lighting."
@@ -108,7 +107,7 @@ def load_pipeline():
     """Load Z-Image Turbo pipeline + LoRA."""
     global pipe
 
-    from diffusers import ZImagePipeline
+    from diffusers import ZImagePipeline, FlowMatchEulerDiscreteScheduler
 
     download_lora()
 
@@ -122,6 +121,15 @@ def load_pipeline():
         kwargs["cache_dir"] = HF_CACHE
     pipe = ZImagePipeline.from_pretrained(MODEL_ID, **kwargs)
     pipe.to("cuda")
+
+    # Override scheduler: shift=7 + Euler Beta (recommended by LoRA trainer)
+    pipe.scheduler = FlowMatchEulerDiscreteScheduler.from_config(
+        pipe.scheduler.config,
+        shift=7.0,
+        use_beta_sigmas=True,
+    )
+    print("  Scheduler: FlowMatchEuler, shift=7.0, beta sigmas")
+    sys.stdout.flush()
 
     print(f"  Pipeline loaded in {time.time() - t0:.1f}s")
     sys.stdout.flush()
@@ -156,8 +164,7 @@ def build_prompt(description: str, character: str = "kaori",
 
     # Build the prompt in parts: trigger, appearance, muscle, then scene
     parts = [
-        "stronggirls style.",
-        f"An anime illustration of {char['appearance']}, {muscle}.",
+        f"anime illustration of {char['appearance']}, {muscle}.",
     ]
 
     # If description mentions clothing, use that; otherwise use default outfit
@@ -211,7 +218,7 @@ def generate_image(job_input: dict) -> dict:
     image = pipe(
         prompt=prompt,
         num_inference_steps=8,
-        guidance_scale=1.0,
+        guidance_scale=0.0,
         width=width,
         height=height,
         generator=generator,
