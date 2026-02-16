@@ -20,7 +20,7 @@ RUN pip3 install --no-cache-dir \
 # diffusers + Z-Image deps + RunPod
 RUN pip3 install --no-cache-dir \
     diffusers transformers accelerate safetensors \
-    sentencepiece peft \
+    sentencepiece peft scipy \
     runpod \
     Pillow numpy \
     && rm -rf /root/.cache/pip

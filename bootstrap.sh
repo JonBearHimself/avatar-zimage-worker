@@ -36,7 +36,7 @@ if [ -d "$NV" ]; then
         echo "[installing] Python packages to $PIP_CACHE ..."
         pip install --no-cache-dir --target="$PIP_CACHE" \
             diffusers transformers accelerate safetensors \
-            sentencepiece peft runpod Pillow numpy
+            sentencepiece peft scipy runpod Pillow numpy
         touch "$PIP_CACHE/.installed"
         echo "[done] Python packages installed"
     fi
