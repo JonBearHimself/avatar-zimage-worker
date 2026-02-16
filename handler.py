@@ -36,40 +36,50 @@ else:
 # ---------------------------------------------------------------------------
 CHARACTERS = {
     "kaori": {
-        "appearance": "a young petite muscular girl with short pink hair and pink eyes, wearing black headphones, small chest",
+        "appearance": "a young muscular girl with short pink hair and pink eyes, wearing black headphones",
+        "appearance_default": "a young muscular girl with short pink hair and pink eyes, wearing black headphones, small chest",
         "outfit": "pink crop top and pink shorts",
+        "default_scene": "in a dark room with gaming PC setup and RGB lighting",
     },
     "yuka": {
         "appearance": "a muscular woman with long black hair in a side ponytail with a red scrunchie, red eyes, ahoge",
         "outfit": "black tank top and black cargo pants",
+        "default_scene": "on a dark city street at night with neon signs",
     },
     "haruka": {
         "appearance": "a mature muscular woman with orange hair in a messy bun with long side locks, green eyes, bangs",
         "outfit": "green sundress with low neckline",
+        "default_scene": "in a sunny kitchen with warm lighting",
     },
     "kasumi": {
         "appearance": "a mature muscular woman with short red hair and a black eyepatch over her right eye, one yellow eye",
         "outfit": "unbuttoned black jacket over a red tank top and black pants",
+        "default_scene": "in a dark warehouse with industrial lighting",
     },
     "manami": {
         "appearance": "a muscular woman with long wavy light green hair with braided locks tied with red ribbons, light green eyes, medium chest",
         "outfit": "white seifuku with navy sailor collar and navy pleated skirt",
+        "default_scene": "in a library with sunlight through windows",
     },
     "miyu": {
         "appearance": "a muscular woman with dark purple wavy hair in medium twintails with black bows, purple eyes, medium chest",
         "outfit": "black sports jacket unzipped over white sports bra and black shorts",
+        "default_scene": "in a gym with equipment in the background",
     },
     "naomi": {
         "appearance": "a mature feral-looking muscular woman with short messy white hair and red eyes, sharp teeth",
         "outfit": "black tank top and red shorts",
+        "default_scene": "on a dark rooftop at night with city lights below",
     },
     "saya": {
         "appearance": "a muscular woman with long straight light blue hair, open light blue eyes, bangs, energetic",
         "outfit": "white button-up shirt with black choker, plaid skirt, and blue tie",
+        "default_scene": "in a bright school hallway with lockers",
     },
     "hino": {
         "appearance": "a muscular woman with long blonde hair, blue eyes, bangs, large chest",
         "outfit": "seifuku with white shirt, pink ribbon bowtie, pink sailor collar, pink mini skirt",
+        "default_scene": "in a school classroom with desks and windows",
     },
 }
 
@@ -80,7 +90,12 @@ MUSCLE_LEVELS = {
     "highly_muscular": "highly muscular female bodybuilder woman with massive thighs, neck muscles, and powerful build",
 }
 
-STYLE_ANCHOR = ""  # LoRA trigger "anime illustration of" handles style
+# Muscle keywords to strip from descriptions (detected by bot, passed as muscle_size)
+_MUSCLE_KEYWORDS = [
+    "gigantic", "enormous", "massive", "huge", "giant", "hulk",
+    "big", "bigger", "larger", "pumped", "swole", "buff",
+    "bodybuilder", "highly muscular", "very muscular",
+]
 
 # ---------------------------------------------------------------------------
 # Global pipeline
@@ -162,9 +177,21 @@ def build_prompt(description: str, character: str = "kaori",
     char = CHARACTERS.get(character, CHARACTERS["kaori"])
     muscle = MUSCLE_LEVELS.get(muscle_size, MUSCLE_LEVELS["default"])
 
+    # Use conditional appearance (e.g. Kaori loses "small chest" when muscular)
+    if muscle_size == "default" and "appearance_default" in char:
+        appearance = char["appearance_default"]
+    else:
+        appearance = char["appearance"]
+
+    # Strip stray muscle keywords from description (already handled by muscle_size)
+    clean_desc = description
+    for kw in _MUSCLE_KEYWORDS:
+        clean_desc = clean_desc.replace(kw, "").replace(kw.title(), "")
+    clean_desc = " ".join(clean_desc.split()).strip(" ,.")
+
     # Build the prompt in parts: trigger, appearance, muscle, then scene
     parts = [
-        f"anime illustration of {char['appearance']}, {muscle}.",
+        f"anime illustration of {appearance}, {muscle}.",
     ]
 
     # If description mentions clothing, use that; otherwise use default outfit
@@ -174,13 +201,26 @@ def build_prompt(description: str, character: str = "kaori",
         "bodysuit", "armor", "kimono", "sweater", "naked", "nude", "topless",
         "seifuku", "sundress", "towel", "crop top", "shorts", "leggings",
     ]
-    desc_lower = description.lower()
+    desc_lower = clean_desc.lower()
     has_clothing = any(w in desc_lower for w in clothing_words)
 
     if has_clothing:
-        parts.append(description + ".")
+        parts.append(clean_desc + ".")
     else:
-        parts.append(f"Wearing {char['outfit']}, {description}.")
+        parts.append(f"Wearing {char['outfit']}, {clean_desc}.")
+
+    # If no scene/environment in description, add character's default scene
+    scene_words = [
+        "room", "gym", "beach", "street", "park", "kitchen", "bathroom",
+        "shower", "pool", "bed", "club", "bar", "restaurant", "school",
+        "office", "rooftop", "alley", "forest", "city", "night", "outside",
+        "indoor", "outdoor", "background", "neon", "light", "dark", "studio",
+        "stage", "garden", "cafe", "train", "car", "water", "ocean", "sky",
+        "rain", "warehouse", "library", "hallway", "locker",
+    ]
+    has_scene = any(w in desc_lower for w in scene_words)
+    if not has_scene and "default_scene" in char:
+        parts.append(char["default_scene"] + ".")
 
     return " ".join(parts)
 
