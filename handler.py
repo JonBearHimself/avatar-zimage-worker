@@ -36,39 +36,39 @@ else:
 # ---------------------------------------------------------------------------
 CHARACTERS = {
     "kaori": {
-        "appearance": "a young petite muscular girl with short pink hair and pink eyes, wearing black headphones, small chest",
+        "appearance": "a young petite girl with short pink hair and pink eyes, wearing black headphones, small chest",
         "outfit": "pink crop top and pink shorts",
     },
     "yuka": {
-        "appearance": "a muscular woman with long black hair in a side ponytail with a red scrunchie, red eyes, ahoge",
+        "appearance": "a woman with long black hair in a side ponytail with a red scrunchie, red eyes, ahoge",
         "outfit": "black tank top and black cargo pants",
     },
     "haruka": {
-        "appearance": "a mature muscular woman with orange hair in a messy bun with long side locks, green eyes, bangs",
+        "appearance": "a mature woman with orange hair in a messy bun with long side locks, green eyes, bangs",
         "outfit": "green sundress with low neckline",
     },
     "kasumi": {
-        "appearance": "a mature muscular woman with short red hair and a black eyepatch over her right eye, one yellow eye",
+        "appearance": "a mature woman with short red hair and a black eyepatch over her right eye, one yellow eye",
         "outfit": "unbuttoned black jacket over a red tank top and black pants",
     },
     "manami": {
-        "appearance": "a muscular woman with long wavy light green hair with braided locks tied with red ribbons, light green eyes, medium chest",
+        "appearance": "a woman with long wavy light green hair with braided locks tied with red ribbons, light green eyes, medium chest",
         "outfit": "white seifuku with navy sailor collar and navy pleated skirt",
     },
     "miyu": {
-        "appearance": "a muscular woman with dark purple wavy hair in medium twintails with black bows, purple eyes, medium chest",
+        "appearance": "a woman with dark purple wavy hair in medium twintails with black bows, purple eyes, medium chest",
         "outfit": "black sports jacket unzipped over white sports bra and black shorts",
     },
     "naomi": {
-        "appearance": "a mature feral-looking muscular woman with short messy white hair and red eyes, sharp teeth",
+        "appearance": "a mature feral-looking woman with short messy white hair and red eyes, sharp teeth",
         "outfit": "black tank top and red shorts",
     },
     "saya": {
-        "appearance": "a muscular woman with long straight light blue hair, open light blue eyes, bangs, energetic",
+        "appearance": "a woman with long straight light blue hair, open light blue eyes, bangs, energetic",
         "outfit": "white button-up shirt with black choker, plaid skirt, and blue tie",
     },
     "hino": {
-        "appearance": "a muscular woman with long blonde hair, blue eyes, bangs, large chest",
+        "appearance": "a woman with long blonde hair, blue eyes, bangs, large chest",
         "outfit": "seifuku with white shirt, pink ribbon bowtie, pink sailor collar, pink mini skirt",
     },
 }
@@ -77,10 +77,10 @@ MUSCLE_LEVELS = {
     "default": "athletic",
     "athletic": "athletic",
     "muscular": "muscular",
-    "highly_muscular": "highly muscular female bodybuilder woman with massive thighs, neck muscles, and powerful build",
+    "highly_muscular": "highly muscular female bodybuilder woman",
 }
 
-STYLE_ANCHOR = "Clean anime linework, vibrant colors, detailed muscle definition, cel-shaded lighting."
+STYLE_ANCHOR = "Clean anime linework, vibrant colors."
 
 # ---------------------------------------------------------------------------
 # Global pipeline
@@ -139,8 +139,8 @@ def load_pipeline():
         print(f"Loading LoRA from {LORA_PATH}...")
         sys.stdout.flush()
         pipe.load_lora_weights(LORA_PATH)
-        pipe.fuse_lora(lora_scale=0.8)
-        print("  LoRA fused at strength 0.8")
+        pipe.fuse_lora(lora_scale=0.65)
+        print("  LoRA fused at strength 0.65")
         sys.stdout.flush()
     else:
         print(f"WARNING: LoRA not found at {LORA_PATH} — running without style LoRA")
@@ -218,7 +218,7 @@ def generate_image(job_input: dict) -> dict:
     image = pipe(
         prompt=prompt,
         num_inference_steps=8,
-        guidance_scale=0.0,
+        guidance_scale=1.0,
         width=width,
         height=height,
         generator=generator,
