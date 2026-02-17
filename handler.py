@@ -210,6 +210,7 @@ def build_prompt(description: str, character: str = "kaori",
         "hoodie", "skirt", "pants", "jeans", "bra", "lingerie", "wearing",
         "bodysuit", "armor", "kimono", "sweater", "naked", "nude", "topless",
         "seifuku", "sundress", "towel", "crop top", "shorts", "leggings",
+        "costume", "cosplay", "outfit", "apron", "robe", "tshirt", "tank top",
     ]
     desc_lower = clean_desc.lower()
     has_clothing = any(w in desc_lower for w in clothing_words)
@@ -232,15 +233,24 @@ def build_prompt(description: str, character: str = "kaori",
     if not has_scene and "default_scene" in char:
         parts.append(char["default_scene"] + ".")
 
-    # If no expression in description, inject a random default for the character
-    expression_words = [
-        "smile", "smiling", "grin", "smirk", "laugh", "wink", "blush",
-        "frown", "cry", "pout", "glare", "stare", "expression", "tongue",
-        "eyes", "blushing", "embarrassed", "angry", "happy", "excited",
-        "shy", "confident", "fierce", "feral", "mocking", "cocky",
+    # Expression injection — split into mood (emotional) and physical (action)
+    # Physical actions alone (wink, tongue out) look flat without a mood
+    mood_words = [
+        "smile", "smiling", "grin", "smirk", "laugh", "blush", "frown",
+        "cry", "pout", "glare", "stare", "blushing", "embarrassed",
+        "angry", "happy", "excited", "shy", "confident", "fierce",
+        "feral", "mocking", "cocky", "seductive", "sultry", "playful",
+        "determined", "mischievous", "sassy", "pouty",
     ]
-    has_expression = any(w in desc_lower for w in expression_words)
-    if not has_expression and "default_expressions" in char:
+    physical_words = [
+        "wink", "winking", "tongue", "peace sign", "flexing", "posing",
+        "arms crossed", "thumbs up", "looking away", "looking down",
+    ]
+    has_mood = any(w in desc_lower for w in mood_words)
+    has_physical = any(w in desc_lower for w in physical_words)
+
+    if not has_mood and "default_expressions" in char:
+        # No mood — inject one (whether physical action present or not)
         expr = random.choice(char["default_expressions"])
         parts.append(expr + ".")
 
