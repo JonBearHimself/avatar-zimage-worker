@@ -7,6 +7,7 @@ Natural language prompting. 8-step generation. ~3-5s per image on A-series GPUs.
 import base64
 import io
 import os
+import random
 import sys
 import time
 import traceback
@@ -36,50 +37,59 @@ else:
 # ---------------------------------------------------------------------------
 CHARACTERS = {
     "kaori": {
-        "appearance": "a young muscular girl with short pink hair and pink eyes, wearing black headphones",
-        "appearance_default": "a young muscular girl with short pink hair and pink eyes, wearing black headphones, small chest",
+        "appearance": "a young cute muscular girl with short pink hair and pink eyes, wearing black headphones",
+        "appearance_default": "a young cute muscular girl with short pink hair and pink eyes, wearing black headphones, small chest",
         "outfit": "pink crop top and pink shorts",
         "default_scene": "in a dark room with gaming PC setup and RGB lighting",
+        "default_expressions": ["mischievous grin", "excited expression", "determined smirk", "tongue out", "winking", "cocky smirk"],
     },
     "yuka": {
         "appearance": "a muscular woman with long black hair in a side ponytail with a red scrunchie, red eyes, ahoge",
         "outfit": "black tank top and black cargo pants",
         "default_scene": "on a dark city street at night with neon signs",
+        "default_expressions": ["confident smirk", "fierce expression", "narrowed eyes", "arms crossed"],
     },
     "haruka": {
         "appearance": "a mature muscular woman with orange hair in a messy bun with long side locks, green eyes, bangs",
         "outfit": "green sundress with low neckline",
         "default_scene": "in a sunny kitchen with warm lighting",
+        "default_expressions": ["warm smile", "gentle expression", "knowing look", "soft laugh"],
     },
     "kasumi": {
         "appearance": "a mature muscular woman with short red hair and a black eyepatch over her right eye, one yellow eye",
         "outfit": "unbuttoned black jacket over a red tank top and black pants",
         "default_scene": "in a dark warehouse with industrial lighting",
+        "default_expressions": ["cold stare", "menacing grin", "raised eyebrow", "sharp glare"],
     },
     "manami": {
         "appearance": "a muscular woman with long wavy light green hair with braided locks tied with red ribbons, light green eyes, medium chest",
         "outfit": "white seifuku with navy sailor collar and navy pleated skirt",
         "default_scene": "in a library with sunlight through windows",
+        "default_expressions": ["shy smile", "blushing", "gentle expression", "looking down shyly"],
     },
     "miyu": {
         "appearance": "a muscular woman with dark purple wavy hair in medium twintails with black bows, purple eyes, medium chest",
         "outfit": "black sports jacket unzipped over white sports bra and black shorts",
         "default_scene": "in a gym with equipment in the background",
+        "default_expressions": ["energetic grin", "peace sign", "determined look", "thumbs up"],
     },
     "naomi": {
         "appearance": "a mature feral-looking muscular woman with short messy white hair and red eyes, sharp teeth",
         "outfit": "black tank top and red shorts",
         "default_scene": "on a dark rooftop at night with city lights below",
+        "default_expressions": ["feral grin", "baring teeth", "wild eyes", "predatory smile"],
     },
     "saya": {
         "appearance": "a muscular woman with long straight light blue hair, open light blue eyes, bangs, energetic",
         "outfit": "white button-up shirt with black choker, plaid skirt, and blue tie",
         "default_scene": "in a bright school hallway with lockers",
+        "default_expressions": ["bright smile", "sparkling eyes", "cheerful wave", "excited grin"],
     },
     "hino": {
         "appearance": "a muscular woman with long blonde hair, blue eyes, bangs, large chest",
         "outfit": "seifuku with white shirt, pink ribbon bowtie, pink sailor collar, pink mini skirt",
         "default_scene": "in a school classroom with desks and windows",
+        "default_expressions": ["mocking smirk", "half-lidded eyes", "smug expression", "flipping hair"],
     },
 }
 
@@ -221,6 +231,18 @@ def build_prompt(description: str, character: str = "kaori",
     has_scene = any(w in desc_lower for w in scene_words)
     if not has_scene and "default_scene" in char:
         parts.append(char["default_scene"] + ".")
+
+    # If no expression in description, inject a random default for the character
+    expression_words = [
+        "smile", "smiling", "grin", "smirk", "laugh", "wink", "blush",
+        "frown", "cry", "pout", "glare", "stare", "expression", "tongue",
+        "eyes", "blushing", "embarrassed", "angry", "happy", "excited",
+        "shy", "confident", "fierce", "feral", "mocking", "cocky",
+    ]
+    has_expression = any(w in desc_lower for w in expression_words)
+    if not has_expression and "default_expressions" in char:
+        expr = random.choice(char["default_expressions"])
+        parts.append(expr + ".")
 
     return " ".join(parts)
 
